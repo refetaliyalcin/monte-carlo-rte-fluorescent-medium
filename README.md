@@ -10,8 +10,11 @@ https://doi.org/10.1016/j.biosystemseng.2020.02.007 Improving crop production in
 It solves RTE in fluorescent medium.
 
 It can handle scattering in the medium due to phosphor particles.
+
 It can handle luminescent cascade where absorption and emission spectra of fluorescence overlaps
+
 It can handle non-flourescent absorbing medium by modifiying quantum yield accordingly and calculating refraction angle at the air-medium interface considering both n and k of the medium.
+
 It can handle up-conversion and down-conversion
 
 The code works on both MATLAB and Octave. 
