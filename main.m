@@ -1,20 +1,20 @@
 % Codded by Refet Ali YALCIN. You can change and distribute the code
-% but keep this commented part. The codes come WITHOUT ANY WARRANTY 
-% In case of use, please cite the articles as:
+% please keep this part. The codes come WITHOUT ANY WARRANTY 
+% In case of use, following articles that uses the code can be cited:
 % https://doi.org/10.1088/2053-1591/ab28b8 Improving photosynthetic efficiency using greenhouse coatings with scattering and fluorescent pigments
 % https://doi.org/10.1016/j.biosystemseng.2020.02.007 Improving crop production in solar illuminated vertical farms using fluorescence coatings
 clear all
 close all
 clc
 
-start_wl=400; % must be an integer
-end_wl=1000; % must be an integer
+start_wl=400; % starting wavelength in nm, must be an integer
+end_wl=1000; % last wavelength of the area of interest, must be an integer
 
-repeat_no=100000; % # of montecarlo simulations for each wavelength
+repeat_no=50000; % # of montecarlo simulations for each wavelength
 h=1*10^-3; %thickness of coating in meters
 radius=5000*10^-9; % radius of fluorescent particles in meters
 f_v=0.01;  % volume fraction of phosphor particles
-QY=0.9; %quantum yield
+QY=0; %quantum yield
 
 polar_angle=linspace(0,89.99999,30); %polar angle is set but not used. you can loop the code over polar angle if required
 polar_angle_rad=polar_angle*pi/180;
@@ -24,10 +24,12 @@ lamda=wl*10^-9;
 
 n_medium=PMMA_n(lamda);
 k_medium=PMMA_k(lamda);
-n_subs=ones(number_wl,1);
+% k_medium=zeros(number_wl,1); % enable for non absorbing medium case
+n_subs=ones(number_wl,1); %substrate is air
 k_subs=zeros(number_wl,1);
-pre_process
+pre_process % call pre process to calculate coefficients
 
+% Below part calculates reflectance and refraction at the air - medium interface
 cos_teta_prime=zeros(length(lamda),length(polar_angle)); %the cos of the ray after refracted from air to medium
 sur_reflection=zeros(length(lamda),length(polar_angle)); %surface reflection at air-medium interfece
 for o=1:length(polar_angle_rad)
@@ -49,6 +51,7 @@ for o=1:length(polar_angle_rad)
     end
 end
 o=1; %for normal incidance;
+% end of refraction and surface reflection calculation
 
 % set database for photons
 db_absorption_no=zeros(number_wl,1);

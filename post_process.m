@@ -37,6 +37,9 @@ legend('Incoming Flux','Reflected Flux','Absorbed Flux','Transmitted Flux','Loca
 saveas(fig7,'Spectral_Flux.fig')
 saveas(fig7,'Spectral_Flux.emf')
 
+
+
+
 if notOctave %yyaxis problem in octave
     %2d transmittance
     fig8=figure(8);
@@ -96,3 +99,16 @@ if notOctave %yyaxis problem in octave
     % % saveas(fig11,'table.fig')
     % % saveas(fig11,'table.emf')
 end
+
+fig9=figure(9);
+transmittance=zeros(number_wl,1);
+for i=1:size(prop_t,2)
+   transmittance(i)= prop_t(i,i);
+end
+plot(wl(1:end-1),transmittance(1:end-1),'-k','LineWidth',2)
+xlabel('Wavelength [nm]') % x-axis label
+ylabel('Spectral Transmittance T_{\lambda=\lambda''}') % y-axis label
+xlim([start_wl end_wl])
+ylim([0 1])
+saveas(fig9,'transmittance.fig')
+saveas(fig9,'transmittance.emf')
