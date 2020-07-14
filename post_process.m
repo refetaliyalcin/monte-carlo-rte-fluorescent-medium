@@ -1,28 +1,27 @@
 
-BB_Source=zeros(number_wl,1);
+BB_Source=zeros(number_wl,1); %%blackbody source
 for i=1:number_wl
-    BB_Source(i)=I_bb(lamda(i),5800);
+    BB_Source(i)=I_bb(lamda(i),5800); %source is at 5800K
 end
 
-BB_Source=1000*BB_Source/sum(BB_Source); %normalize source at 1000W/m^2
+BB_Source=1000*BB_Source/sum(BB_Source); %normalize the source at 1000W/m^2
 
-% error('123');
-prop_t=db_trans_no/repeat_no;
-prop_r=db_reflect_no/repeat_no;
-prop_a=db_absorption_no/repeat_no;
+prop_t=db_trans_no/repeat_no; %transmittance tensor
+prop_r=db_reflect_no/repeat_no; %reflectance tensor
+prop_a=db_absorption_no/repeat_no; %absorptance vector
 
-total_photon=sum(sum(db_reflect_no,2))+sum(sum(db_trans_no,2))+sum(db_absorption_no);
+total_photon=sum(sum(db_reflect_no,2))+sum(sum(db_trans_no,2))+sum(db_absorption_no); %total number of photon
 one=total_photon/(repeat_no*number_wl); %this should be one for check
 q_ref_lamda=zeros(number_wl,1);
 q_tra_lamda=zeros(number_wl,1);
-q_abs_lamda=BB_Source.*prop_a;
+q_abs_lamda=BB_Source.*prop_a; % absorbed spectral heat flux
 
 for i=start_wl:end_wl
     wl_index=i-start_wl+1;
-    q_ref_lamda(wl_index)=sum(BB_Source'.*(prop_r(wl_index,:)));
-    q_tra_lamda(wl_index)=sum(BB_Source'.*(prop_t(wl_index,:)));
+    q_ref_lamda(wl_index)=sum(BB_Source'.*(prop_r(wl_index,:))); % reflected spectral heat flux
+    q_tra_lamda(wl_index)=sum(BB_Source'.*(prop_t(wl_index,:))); % transmitted spectral heat flux
 end
-ref_lamda=q_ref_lamda./BB_Source;
+ref_lamda=q_ref_lamda./BB_Source; % spectral reflectance under 5800K blackbody source
 
 
 %spectral fluxes
