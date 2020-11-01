@@ -14,9 +14,13 @@ function [absorption_no,reflect_no,trans_no]=monte_carlo(h,wl,scat_prob,ext_tot,
     y=0; %position vector y component
     z=0; %position vector z component
     phi=2*pi*rand;
+    cos_phi=cos(phi);
+    if phi<pi
+        sin_phi=sqrt(1-cos_phi*cos_phi);
+    else
+        sin_phi=-sqrt(1-cos_phi*cos_phi);
+    end
     sin_teta_prime=sqrt(1-cos_teta_prime*cos_teta_prime);
-    sin_phi=sin(phi);
-    cos_phi=sqrt(1-sin_teta_prime*sin_teta_prime);
     s_x=sin_teta_prime*sin_phi; %direction vector x component
     s_y=sin_teta_prime*cos_phi; %direction vector y component
     s_z=cos_teta_prime; %direction vector z component
