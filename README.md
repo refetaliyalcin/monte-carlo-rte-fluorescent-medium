@@ -17,6 +17,8 @@ It can handle non-flourescent absorbing medium by modifiying quantum yield accor
 
 It can handle up-conversion and down-conversion
 
+The code considers particle size distribution 
+
 The code works on both MATLAB and Octave. 
 
 main.m code is the main code to execute. Concentration, size and thickness of the phosphor can be altered inside this file.
