@@ -1,44 +1,49 @@
 notOctave = exist('OCTAVE_VERSION', 'builtin') == 0;
 
-alfa=zeros(number_wl,1);
+
 beta_non_fl=zeros(number_wl,1);
 beta_fl=zeros(number_wl,1);
-beta=zeros(number_wl,1);
-g=zeros(number_wl,1);
-QY_modified=zeros(number_wl,1);
-
-abs_coeff=abs_coeff_yagce(lamda);
-
-k=2*pi./lamda;
-k_yc=abs_coeff./(2*k);
-n_yc=n_yagce(lamda);
-
-V=4*pi*radius^3/3;
-
 %abs and scat coef
-for i=1:number_wl
-    ev_pigment_n=n_yc(i);
-    ev_pigment_k=k_yc(i);
-    x=2*pi*radius*n_medium(i)/lamda(i);
-    m=(ev_pigment_n+1i*ev_pigment_k)/n_medium(i);
-    fonksiyon=Mie(m,x);
-    Qext=fonksiyon(1);
-    Qsca=fonksiyon(2);
-    Csca=pi*radius^2*Qsca;
-    Cext=pi*radius^2*Qext;
-    Cabs=Cext-Csca;
-    alfa(i)=f_v*Csca/V;
-    beta_fl(i)=f_v*Cabs/V; %absorption by fluorescence
-    beta_non_fl(i)=4*pi*k_medium(i)/lamda(i); %absorption by medium (non fluorescent)
-    beta(i)=beta_fl(i)+beta_non_fl(i);
-    QY_modified(i)=QY*beta_fl(i)/beta(i); %Modified version of QY is used since the probability of re-emitting the absorbed rays by non fluorescent part is zero.
-    g(i)=fonksiyon(5);
+
+
+r_vector=(radius-2.45*sigma):sigma/200:(radius+2.45*sigma);
+weight_vector = normpdf(r_vector,radius,sigma);
+weight_vector=weight_vector/trapz(r_vector,weight_vector);
+
+
+mu_tot_arr_sigma=zeros(length(lamda),length(r_vector));
+beta_sigma=zeros(length(lamda),length(r_vector));
+alfa_sigma=zeros(length(lamda),length(r_vector));
+scat_prob_arr_sigma=zeros(length(lamda),length(r_vector));
+g_arr_sigma=zeros(length(lamda),length(r_vector));
+QY_modified_sigma=zeros(length(lamda),length(r_vector));
+for z=1:length(r_vector)
+    Area=pi*r_vector(z)^2;
+    V=4*pi*r_vector(z)^3/3;
+    for i=1:number_wl
+        x=2*pi*r_vector(z)*n_medium(i)/lamda(i);
+        m=(n_phosphor(i)+1i*k_phosphor(i))/n_medium(i);
+        fonksiyon=Mie(m,x);
+        Qabs=fonksiyon(3);
+        Qsca=fonksiyon(2);
+        g_arr_sigma(i,z)=fonksiyon(5);
+        Qsca=Qsca*(1.06-g_arr_sigma(i,z));
+        Qabs=Qabs*1.47;
+        alfa_sigma(i,z)=f_v*Qsca*Area/V;
+        beta_fl=f_v*Qabs*Area/V;
+        beta_non_fl=(1-f_v)*4*pi*k_medium(i)/lamda(i); %absorption by medium (non fluorescent)
+        beta_sigma(i,z)=beta_fl+beta_non_fl;
+        QY_modified_sigma(i,z)=QY(i)*beta_fl/beta_sigma(i,z); %Modified version of QY is used since the probability of re-emitting the absorbed rays by non fluorescent part is zero.
+        mu_tot_arr_sigma(i,z)=alfa_sigma(i,z)+beta_sigma(i,z);
+        scat_prob_arr_sigma(i,z)=alfa_sigma(i,z)/mu_tot_arr_sigma(i,z);
+    end
 end
-
-ext_tot=alfa+beta;
-scat_prob=alfa./ext_tot;
-
-
+ext_tot=trapz(r_vector,(weight_vector.*mu_tot_arr_sigma)');
+scat_prob=trapz(r_vector,(weight_vector.*scat_prob_arr_sigma)');
+QY_modified=trapz(r_vector,(weight_vector.*QY_modified_sigma)');
+g=trapz(r_vector,(weight_vector.*g_arr_sigma.*scat_prob_arr_sigma)')./trapz(r_vector,(weight_vector.*scat_prob_arr_sigma)');
+beta=trapz(r_vector,(weight_vector.*beta_sigma)');
+alfa=trapz(r_vector,(weight_vector.*alfa_sigma)');
 % pdf ve cdf
 
 data_flo=flo_emission_data();
@@ -74,8 +79,8 @@ end
 
 fig1=figure(1);
 
-plot(wl,abs_coeff/max(abs_coeff),'-k',data_1,data_2/max(data_2),'--k','LineWidth',2)
-ylabel('Normalized Intensity')
+plot(wl,exc_yagce(wl),'-k',data_1,data_2/max(data_2),'--k','LineWidth',2)
+ylabel('Normalized Intensity [a.u.]')
 xlabel('Wavelength [nm]')
 xlim([400 750])
 legend('Excitation','Emission','Location','NorthEast')
@@ -88,16 +93,16 @@ if notOctave %yyaxis problem in octave
     set(fig2,'defaultAxesColorOrder',[[0 0 0]; [0 0 0]]);
     hold on
     yyaxis left
-    plot(wl,n_yc,'-k','LineWidth',2)
+    plot(wl,n_phosphor,'-k','LineWidth',2)
     ylabel('n')
     ylim([1.7 2.1])
     yyaxis right
-    plot(wl,k_yc,'--k','LineWidth',2)
+    plot(wl,k_phosphor,'--k','LineWidth',2)
     ylabel('k')
     hold off
     box on
     xlabel('Wavelength [nm]')
-    xlim([400 1000])
+    xlim([400 end_wl])
     legend('n','k','Location','SouthEast')
     saveas(fig2,'ref_ind.fig')
     saveas(fig2,'ref_ind.emf')
@@ -107,18 +112,18 @@ if notOctave %yyaxis problem in octave
     set(fig3,'defaultAxesColorOrder',[[0 0 0]; [0 0 0]]);
     hold on
     yyaxis left
-    plot(wl,alfa,'-k',wl,beta*10,'--k','LineWidth',2)
+    plot(wl,alfa,'-k',wl,beta,':k','LineWidth',2)
     ylabel('Scattering and Absorption Coefficient [1/m]')
-    ylim([0  1.4*max(alfa)])
+%     ylim([0  1.1*max(alfa)])
     yyaxis right
-    plot(wl,g,':k','LineWidth',2)
+    plot(wl,g,'--k','LineWidth',2)
     ylabel('Asymmetry Parameter (g)')
-    ylim([0.75 1])
+    ylim([0.85 1])
     hold off
     box on
     xlabel('Wavelength [nm]')
-    xlim([400 1000])
-    legend('Scattering Coefficient','Absorption Coefficient x 10','Asymmetry Parameter','Location','NorthEast')
+    xlim([400 end_wl])
+    legend('Scattering Coefficient','Absorption Coefficient','Asymmetry Parameter','Location','SouthEast')
     saveas(fig3,'scat_abs_coef.fig')
     saveas(fig3,'scat_abs_coef.emf')
 

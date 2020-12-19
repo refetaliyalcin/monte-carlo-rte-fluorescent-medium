@@ -30,7 +30,7 @@ plot(wl,BB_Source,'--k',wl,q_ref_lamda,':k',wl,q_abs_lamda,'-k',wl,q_tra_lamda,'
 xlabel('Wavelength [nm]') % x-axis label
 ylabel('Spectral Flux [W/m^2\cdotnm]') % y-axis label
 ylim([0 2.5])
-xlim([400 1000])
+xlim([400 end_wl])
 box on
 legend('Incoming Flux','Reflected Flux','Absorbed Flux','Transmitted Flux','Location','northeast')
 saveas(fig7,'Spectral_Flux.fig')

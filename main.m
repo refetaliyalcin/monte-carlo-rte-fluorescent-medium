@@ -8,13 +8,13 @@ close all
 clc
 
 start_wl=400; % starting wavelength in nm, must be an integer
-end_wl=1000; % last wavelength of the area of interest, must be an integer
+end_wl=900; % last wavelength of the area of interest, must be an integer
 
-repeat_no=100000; % # of montecarlo simulations for each wavelength
+repeat_no=1000000; % # of montecarlo simulations for each wavelength
 h=1*10^-3; %thickness of coating in meters
-radius=5000*10^-9; % radius of fluorescent particles in meters
-f_v=0.01;  % volume fraction of phosphor particles
-QY=0.9; %quantum yield
+radius=8500*10^-9; % radius of fluorescent particles in meters
+sigma=3400*10^-9;
+f_v=0.02;  % volume fraction of phosphor particles
 polar_angle_degree=0; %polar angle of incident in degree 
 
 polar_angle_rad=polar_angle_degree*pi/180;
@@ -22,11 +22,14 @@ wl=(start_wl:end_wl)';
 number_wl=length(wl);
 lamda=wl*10^-9;
 
+QY=QY_l(lamda); %quantum yield
 n_medium=PMMA_n(lamda);
 k_medium=PMMA_k(lamda);
 % k_medium=zeros(number_wl,1); % enable for non absorbing medium case
 n_subs=ones(number_wl,1); %substrate is air
 k_subs=zeros(number_wl,1);
+n_phosphor=n_yagce(lamda);
+k_phosphor=k_yagce(lamda);
 pre_process % call pre process to calculate coefficients
 
 % Below part calculates reflectance and refraction at the air - medium interface
@@ -63,7 +66,7 @@ for k=start_wl:end_wl
     trans_no=zeros(number_wl,1);
     wl_index=k-start_wl+1;
     for i=1:repeat_no
-        [absorption_no_new,reflect_no_new,trans_no_new] = monte_carlo(h,k,scat_prob,ext_tot,g,QY_modified,start_wl,number_wl,inv_cdf,cos_teta_prime(wl_index),sur_reflection(wl_index),n_medium,k_medium,n_subs,k_subs);
+        [absorption_no_new,reflect_no_new,trans_no_new] = monte_carlo(h,k,scat_prob,5*ext_tot,g,QY_modified,start_wl,number_wl,inv_cdf,cos_teta_prime(wl_index),sur_reflection(wl_index),n_medium,k_medium,n_subs,k_subs);
         absorption_no=absorption_no + absorption_no_new;
         reflect_no=reflect_no + reflect_no_new;
         trans_no=trans_no + trans_no_new;
